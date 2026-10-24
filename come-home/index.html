@@ -1,0 +1,579 @@
+<title>Escritório Come Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Outfit:wght@400;500;600&family=Silkscreen&display=swap">
+<style>
+/* Layout: cabeçalho com a marca, planta isométrica do andar à esquerda, legenda das salas à direita (empilha no celular) */
+:root {
+  --bg: #11201a;
+  --panel: #182b22;
+  --panel-2: #20372b;
+  --line: #2e4a3b;
+  --fg: #f2ebd8;
+  --muted: #a9b9a8;
+  --gold: #cfa441;
+  --gold-soft: #e6c56c;
+  --cream: #ede1c4;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-pixel: "Silkscreen", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background:
+    radial-gradient(1200px 600px at 30% -10%, #1d3a2b 0%, transparent 60%),
+    var(--bg);
+  min-height: 100%;
+}
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 24px; }
+
+/* Cabeçalho */
+header { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.logo { width: 72px; height: 72px; flex: none; border-radius: 16px; box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0,0,0,.35); }
+.brand { min-width: 0; flex: 1 1 320px; }
+.eyebrow { font-family: var(--font-pixel); font-size: 11px; letter-spacing: .12em; color: var(--gold-soft); text-transform: uppercase; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 4.4vw, 46px); line-height: 1.05; margin: 4px 0 6px; text-wrap: balance; letter-spacing: -.01em; }
+h1 em { font-style: normal; color: var(--gold); }
+.sub { color: var(--muted); margin: 0; max-width: 62ch; }
+.meta { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip { font-size: 13px; padding: 6px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--fg); white-space: nowrap; }
+.chip b { color: var(--gold-soft); font-weight: 600; }
+
+/* Grade principal */
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+@media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.stage {
+  position: relative; min-width: 0;
+  background: linear-gradient(180deg, #17302a 0%, #0f1d17 100%);
+  border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+}
+.stage-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--line); background: rgba(0,0,0,.15); }
+.floor-tag { font-family: var(--font-pixel); font-size: 12px; letter-spacing: .08em; color: var(--cream); }
+.floor-tag span { color: var(--gold-soft); }
+.hint { font-size: 13px; color: var(--muted); }
+.scene-scroll { overflow-x: auto; }
+#scene { display: block; width: 100%; min-width: 620px; height: auto; }
+.room { cursor: pointer; transition: opacity .25s ease, filter .25s ease; }
+.room:focus { outline: none; }
+.room:focus-visible .hit { stroke: var(--gold-soft); stroke-width: 3; }
+.scene.has-focus .room:not(.on) { opacity: .28; filter: saturate(.4); }
+.room.on { filter: drop-shadow(0 0 10px rgba(230,197,108,.45)); }
+.hit { fill: transparent; }
+.badge text { font-family: var(--font-pixel); font-size: 12px; }
+.av { animation: bob 3.2s ease-in-out infinite; }
+.smoke { animation: smoke 3.6s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-1.6px) } }
+@keyframes smoke { 0% { transform: translateY(3px); opacity: .2 } 50% { opacity: .9 } 100% { transform: translateY(-3px); opacity: .2 } }
+@media (prefers-reduced-motion: reduce) { .av, .smoke { animation: none; } .room { transition: none; } }
+
+/* Tooltip */
+#tip {
+  position: absolute; pointer-events: none; z-index: 5; width: 250px;
+  background: #0d1a14f2; border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; box-shadow: 0 12px 30px rgba(0,0,0,.45); font-size: 13px;
+}
+#tip h3 { margin: 0 0 2px; font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+#tip .who { color: var(--gold-soft); font-size: 12px; margin-bottom: 6px; }
+#tip p { margin: 0; color: var(--muted); }
+
+/* Legenda */
+aside { display: grid; gap: 12px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.panel h2 { margin: 0 0 10px; font-family: var(--font-display); font-weight: 600; font-size: 20px; }
+.rooms { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rooms button {
+  width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  text-align: left; padding: 8px 10px; border-radius: 12px; border: 1px solid transparent;
+  background: transparent; color: var(--fg); font: inherit; cursor: pointer;
+}
+.rooms button:hover, .rooms button.on { background: var(--panel-2); border-color: var(--line); }
+.rooms button:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 1px; }
+.num { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-family: var(--font-pixel); font-size: 12px; color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+.rname { font-weight: 600; font-size: 14px; line-height: 1.2; }
+.rteam { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.cap { font-family: var(--font-pixel); font-size: 10px; color: var(--muted); letter-spacing: .05em; white-space: nowrap; }
+.specs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.spec { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; }
+.spec b { display: block; font-family: var(--font-display); font-size: 22px; color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+.spec span { font-size: 12px; color: var(--muted); }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <svg class="logo" viewBox="0 0 100 100" role="img" aria-label="Logo Imobiliária Come Home">
+      <rect width="100" height="100" fill="#16291f"/>
+      <path class="smoke" d="M63 30c-3 3 3 6 0 10s-2 7 0 9" fill="none" stroke="#8b9483" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="60" y="40" width="5" height="9" rx="1" fill="#c3963f"/>
+      <polygon points="25,56 50,32 75,56" fill="#a9843a" stroke="#c3963f" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M44 23 L56 37 M56 23 L44 37" stroke="#c3963f" stroke-width="2.8" stroke-linecap="round"/>
+      <path d="M34 56h32v18a4 4 0 0 1-4 4H38a4 4 0 0 1-4-4z" fill="#f2e9d6"/>
+      <rect x="38" y="60" width="7" height="7" rx="1.4" fill="#fbcf7e"/><path d="M41.5 60v7M38 63.5h7" stroke="#16291f" stroke-width=".9"/>
+      <rect x="55" y="60" width="7" height="7" rx="1.4" fill="#fbcf7e"/><path d="M58.5 60v7M55 63.5h7" stroke="#16291f" stroke-width=".9"/>
+      <path d="M46 78v-11a4 4 0 0 1 8 0v11z" fill="#a9843a" stroke="#16291f" stroke-width="1"/>
+    </svg>
+    <div class="brand">
+      <div class="eyebrow">Sede · Edifício Horizonte, 12º andar</div>
+      <h1>Imobiliária <em>Come Home</em></h1>
+      <p class="sub">O andar inteiro da imobiliária em visão isométrica: diretoria, times, reunião e um espaço para respirar entre um fechamento e outro. Passe o mouse ou toque numa sala para ver quem trabalha ali.</p>
+    </div>
+    <div class="meta">
+      <span class="chip">Dono · <b>Vitor</b></span>
+      <span class="chip">Sócia · <b>Day</b></span>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="Planta isométrica do escritório">
+      <div class="stage-top">
+        <span class="floor-tag">12º ANDAR · <span>480 m²</span> · PÉ-DIREITO 3,2 M</span>
+        <span class="hint" id="hint">Clique numa sala para destacar. Clique de novo para ver tudo.</span>
+      </div>
+      <div class="scene-scroll">
+        <svg id="scene" class="scene" viewBox="-392 -118 784 528" role="group" aria-label="Escritório com 9 ambientes"></svg>
+      </div>
+      <div id="tip" hidden></div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h2>Ambientes</h2>
+        <ul class="rooms" id="legend"></ul>
+      </div>
+      <div class="panel">
+        <h2>O andar</h2>
+        <div class="specs">
+          <div class="spec"><b>9</b><span>ambientes</span></div>
+          <div class="spec"><b>31</b><span>estações de trabalho</span></div>
+          <div class="spec"><b>12</b><span>lugares na reunião</span></div>
+          <div class="spec"><b>4</b><span>fachadas de vidro</span></div>
+        </div>
+      </div>
+      <p class="note">Divisórias baixas em madeira e piso de tábuas corridas mantêm o andar aberto e iluminado; cada time tem um tapete na sua cor. Nomes da equipe são ilustrativos.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  const TW = 50, TH = 26;
+  const pt = (gx, gy, z = 0) => [(gx - gy) * TW / 2, (gx + gy) * TH / 2 - z];
+  const ps = a => a.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    const c = v => Math.max(0, Math.min(255, Math.round(v * f)));
+    return `rgb(${c((n >> 16) & 255)},${c((n >> 8) & 255)},${c(n & 255)})`;
+  }
+  const poly = (pts, fill, stroke) =>
+    `<polygon points="${ps(pts)}" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="0.7" stroke-linejoin="round"` : ''}/>`;
+  const line = (a, b, c, w = 2) =>
+    `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+
+  // Cubo isométrico: faces leste, sul e topo
+  function box(gx, gy, w, d, z0, h, color, opt = {}) {
+    const z1 = z0 + h, st = opt.stroke || shade(color, 0.55);
+    const top = [pt(gx, gy, z1), pt(gx + w, gy, z1), pt(gx + w, gy + d, z1), pt(gx, gy + d, z1)];
+    const south = [pt(gx, gy + d, z1), pt(gx + w, gy + d, z1), pt(gx + w, gy + d, z0), pt(gx, gy + d, z0)];
+    const east = [pt(gx + w, gy, z1), pt(gx + w, gy + d, z1), pt(gx + w, gy + d, z0), pt(gx + w, gy, z0)];
+    return poly(east, shade(color, 0.8), st) + poly(south, shade(color, 0.66), st) + poly(top, opt.top || color, st);
+  }
+  // Painéis em plano (paredes e objetos fixados nelas)
+  const panelN = (gx, gy, w, z0, z1, fill, st) => poly([pt(gx, gy, z0), pt(gx + w, gy, z0), pt(gx + w, gy, z1), pt(gx, gy, z1)], fill, st);
+  const panelW = (gx, gy, d, z0, z1, fill, st) => poly([pt(gx, gy, z0), pt(gx, gy + d, z0), pt(gx, gy + d, z1), pt(gx, gy, z1)], fill, st);
+  const flat = (gx, gy, w, d, z, fill, st) => poly([pt(gx, gy, z), pt(gx + w, gy, z), pt(gx + w, gy + d, z), pt(gx, gy + d, z)], fill, st);
+
+  const WOOD = '#8b5a33', WOOD_L = '#b07a47', DARK = '#2a2f37', WHITE = '#f4efe2';
+  const GLASS = '#f6d27c';
+
+  // ---------- Móveis ----------
+  function chair(gx, gy, c, facing = 'n') {
+    let s = box(gx, gy, 0.7, 0.7, 0, 6, shade(c, 0.95));
+    if (facing === 'n') s += box(gx, gy + 0.55, 0.7, 0.15, 6, 8, shade(c, 0.85));
+    if (facing === 's') s = box(gx, gy, 0.7, 0.15, 6, 8, shade(c, 0.85)) + s;
+    if (facing === 'w') s += box(gx + 0.55, gy, 0.15, 0.7, 6, 8, shade(c, 0.85));
+    if (facing === 'e') s = box(gx, gy, 0.15, 0.7, 6, 8, shade(c, 0.85)) + s;
+    return s;
+  }
+  function monitor(gx, gy, z, glow) {
+    return box(gx, gy, 0.7, 0.1, z, 9, DARK) + panelN(gx + 0.05, gy + 0.1, 0.6, z + 1.5, z + 8, glow || '#7fb0d9');
+  }
+  function desk(gx, gy, accent, opt = {}) {
+    const w = opt.w || 2, wood = opt.wood || WOOD_L;
+    let s = box(gx, gy, w, 1, 0, 13, wood, { top: shade(wood, 1.12) });
+    s += monitor(gx + 0.3, gy + 0.2, 13, opt.glow);
+    if (w > 1.6) s += box(gx + w - 0.75, gy + 0.35, 0.45, 0.35, 13, 1.5, WHITE);
+    if (!opt.noChair) s += chair(gx + 0.45, gy + 1.15, accent);
+    return s;
+  }
+  function plant(gx, gy, big) {
+    const k = big ? 1.35 : 1;
+    let s = box(gx, gy, 0.55, 0.55, 0, 7 * k, '#b4663b', { top: '#5a3a22' });
+    const t = pt(gx + 0.27, gy + 0.27, 7 * k);
+    s += `<ellipse cx="${t[0]}" cy="${t[1] - 9 * k}" rx="${9 * k}" ry="${12 * k}" fill="#356b3d"/>`;
+    s += `<ellipse cx="${t[0] - 4 * k}" cy="${t[1] - 5 * k}" rx="${6 * k}" ry="${8 * k}" fill="#4c8a52"/>`;
+    s += `<ellipse cx="${t[0] + 4 * k}" cy="${t[1] - 12 * k}" rx="${5 * k}" ry="${7 * k}" fill="#5c9c5e"/>`;
+    return s;
+  }
+  function shelf(gx, gy, w, h, color, books) {
+    let s = box(gx, gy, w, 0.5, 0, h, color);
+    const rows = Math.floor(h / 11);
+    const pal = books || ['#a8432f', '#2f5d86', '#c8963a', '#3f6e47', '#6a4a8a'];
+    for (let r = 0; r < rows; r++) {
+      const z = 3 + r * 11;
+      for (let i = 0; i < w * 4 - 1; i++) {
+        const x = gx + 0.12 + i * 0.25;
+        s += panelN(x, gy + 0.5, 0.18, z, z + 7 + (i % 3), pal[(i + r) % pal.length], 'rgba(0,0,0,.25)');
+      }
+    }
+    return s;
+  }
+  function sofa(gx, gy, w, c, facing = 'n') {
+    let s = '';
+    if (facing === 'n') {
+      s += box(gx, gy, w, 0.9, 0, 7, c);
+      s += box(gx, gy + 0.7, w, 0.3, 7, 8, shade(c, 0.9));
+      s += box(gx - 0.2, gy, 0.2, 1, 0, 11, shade(c, 0.85)) + box(gx + w, gy, 0.2, 1, 0, 11, shade(c, 0.85));
+    } else { // encosto a oeste, voltado para leste
+      s += box(gx, gy, 0.3, w, 7, 8, shade(c, 0.9));
+      s += box(gx, gy, 0.9, w, 0, 7, c);
+      s += box(gx, gy - 0.2, 1, 0.2, 0, 11, shade(c, 0.85)) + box(gx, gy + w, 1, 0.2, 0, 11, shade(c, 0.85));
+    }
+    return s;
+  }
+  function avatar(gx, gy, shirt, o = {}) {
+    const skin = o.skin || '#e2b48b', hair = o.hair || '#3b2a1e', pants = o.pants || '#2f3542';
+    const b = pt(gx, gy, 0);
+    let s = `<ellipse cx="${b[0]}" cy="${b[1]}" rx="8" ry="4" fill="rgba(0,0,0,.2)"/>`;
+    s += box(gx - 0.15, gy - 0.15, 0.3, 0.3, 0, 7, pants);
+    s += box(gx - 0.2, gy - 0.2, 0.4, 0.4, 7, 9, shirt);
+    const h = pt(gx, gy, 21);
+    if (o.long) s += `<rect x="${h[0] - 6.5}" y="${h[1] - 4}" width="13" height="12" rx="5" fill="${hair}"/>`;
+    s += `<circle cx="${h[0]}" cy="${h[1]}" r="6.2" fill="${skin}"/>`;
+    s += `<path d="M${h[0] - 6.4} ${h[1] - 0.5}a6.4 6.4 0 0 1 12.8 0c-3-2.2-9.8-2.2-12.8 0z" fill="${hair}"/>`;
+    s += `<circle cx="${h[0] - 2.2}" cy="${h[1] + 0.8}" r=".9" fill="#2a1d14"/><circle cx="${h[0] + 2.2}" cy="${h[1] + 0.8}" r=".9" fill="#2a1d14"/>`;
+    return `<g class="av" style="animation-delay:${(o.delay || 0)}s">${s}</g>`;
+  }
+  function rug(r, inset, color) {
+    const x0 = r.x + inset, y0 = r.y + inset, x1 = r.x + r.w - inset, y1 = r.y + r.d - inset;
+    return poly([pt(x0, y0, .4), pt(x1, y0, .4), pt(x1, y1, .4), pt(x0, y1, .4)], shade(color, 1.0), shade(color, .7)) +
+      poly([pt(x0 + .3, y0 + .3, .5), pt(x1 - .3, y0 + .3, .5), pt(x1 - .3, y1 - .3, .5), pt(x0 + .3, y1 - .3, .5)], 'none', 'rgba(255,255,255,.35)');
+  }
+  function wallTV(gx, gy, w, z0, h, screen) {
+    return panelN(gx, gy + 0.02, w, z0, z0 + h, DARK, '#111') + panelN(gx + 0.12, gy + 0.03, w - 0.24, z0 + 2, z0 + h - 2, screen || '#3c6e9e');
+  }
+
+  // ---------- Salas ----------
+  const ROOMS = [
+    { id: 'recepcao', n: 1, name: 'Recepção', team: 'Atendimento', who: 'Equipe de atendimento · 2 pessoas', cap: '6 lugares', color: '#cfa441', x: 0, y: 0, w: 5, d: 5,
+      desc: 'Balcão em madeira com o letreiro Come Home, sofá de espera e café para quem chega para assinar contrato.' },
+    { id: 'dono', n: 2, name: 'Sala do Dono', team: 'Diretoria', who: 'Vitor · Fundador', cap: '1 + 2 visitas', color: '#2f7a57', x: 5, y: 0, w: 5, d: 5,
+      desc: 'Mesa executiva, estante com contratos históricos, sofá para conversas reservadas e vista para a cidade.' },
+    { id: 'socia', n: 3, name: 'Sala da Sócia', team: 'Diretoria', who: 'Day · Sócia', cap: '1 + 2 visitas', color: '#c0654a', x: 10, y: 0, w: 5, d: 5,
+      desc: 'Mesa em L, poltronas para receber clientes e uma parede verde viva atrás da mesa.' },
+    { id: 'marketing', n: 4, name: 'Marketing', team: 'Time de Marketing', who: '4 pessoas · Conteúdo, tráfego e design', cap: '4 estações', color: '#e2803a', x: 0, y: 5, w: 5, d: 5,
+      desc: 'Mural de campanhas, mesa de produção para fotos de imóveis e telas grandes para edição de tours virtuais.' },
+    { id: 'reuniao', n: 5, name: 'Sala de Reunião', team: 'Uso compartilhado', who: 'Reservável por todos os times', cap: '12 lugares', color: '#3e6fa8', x: 5, y: 5, w: 5, d: 5,
+      desc: 'Mesa para 12, TV de 85" para apresentar imóveis e plantas, e quadro branco para negociações.' },
+    { id: 'comercial', n: 6, name: 'Comercial', team: 'Time Comercial', who: '8 corretores · Vendas e locação', cap: '8 estações', color: '#d9a531', x: 10, y: 5, w: 5, d: 5,
+      desc: 'Bancadas em fileira com headset, painel de metas do mês e o sino de venda fechada.' },
+    { id: 'juridico', n: 7, name: 'Jurídico', team: 'Time Jurídico', who: '3 pessoas · Contratos e registros', cap: '3 estações', color: '#5b5aa8', x: 0, y: 10, w: 5, d: 5,
+      desc: 'Estantes do chão ao teto com códigos e matrículas, arquivo deslizante e mesa de revisão de contratos.' },
+    { id: 'financeiro', n: 8, name: 'Financeiro', team: 'Time Financeiro', who: '3 pessoas · Repasses, comissões e caixa', cap: '3 estações', color: '#3f8f5c', x: 5, y: 10, w: 5, d: 5,
+      desc: 'Estações com monitor duplo, cofre, arquivo de notas e painel com o fluxo de caixa do mês.' },
+    { id: 'jogos', n: 9, name: 'Sala de Jogos', team: 'Descompressão', who: 'Aberta a todos', cap: 'livre', color: '#8150a6', x: 10, y: 10, w: 5, d: 5,
+      desc: 'Mesa de sinuca, fliperama, pufes, videogame na TV e frigobar para comemorar as vendas.' },
+  ];
+
+  function furnish(r) {
+    const X = r.x, Y = r.y, c = r.color;
+    let s = '';
+    switch (r.id) {
+      case 'recepcao': {
+        // letreiro na parede
+        s += panelN(X + 1.3, Y + 0.02, 2.4, 40, 66, '#16291f', '#0c1611');
+        const a = pt(X + 2.5, Y, 61);
+        s += `<text x="${a[0]}" y="${a[1] + 1}" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="800" font-size="11" fill="${GLASS}" transform="skewY(27) translate(0,${-(a[0]) * 0.51})">COME HOME</text>`;
+        s += plant(X + 0.3, Y + 0.3, true);
+        s += box(X + 1.2, Y + 1.4, 2.6, 0.9, 0, 15, WOOD, { top: '#e8dcc2' });
+        s += box(X + 3.5, Y + 1.4, 0.9, 1.9, 0, 15, WOOD, { top: '#e8dcc2' });
+        s += monitor(X + 2.4, Y + 1.55, 15, '#cfe3b8');
+        s += avatar(X + 2.2, Y + 0.95, c, { hair: '#5a3b24', long: true, delay: .4 });
+        s += sofa(X + 0.4, Y + 3.0, 1.6, '#3f6b54', 'w');
+        s += box(X + 1.6, Y + 3.4, 0.8, 0.8, 0, 6, WOOD_L);
+        s += avatar(X + 2.9, Y + 3.9, '#7a8fa6', { hair: '#222', delay: 1.1 });
+        s += plant(X + 4.3, Y + 4.2);
+        break;
+      }
+      case 'dono': {
+        s += shelf(X + 0.5, Y + 0.05, 2, 34, WOOD);
+        s += wallTV(X + 3.0, Y, 1.4, 34, 22, '#264b3c');
+        s += rug(r, 1.1, '#295e45');
+        s += box(X + 1.5, Y + 1.7, 2.4, 1.1, 0, 14, '#5b3a22', { top: '#6e4a2c' });
+        s += monitor(X + 2.2, Y + 1.85, 14, '#b8d6c6');
+        s += box(X + 3.2, Y + 2.05, 0.4, 0.3, 14, 1.5, WHITE);
+        s += chair(X + 2.3, Y + 1.0, '#1f2a27', 's');
+        s += avatar(X + 2.6, Y + 1.25, '#2f7a57', { hair: '#2b1d13', delay: 0 });
+        s += chair(X + 1.8, Y + 3.2, '#c99d4c') + chair(X + 3.0, Y + 3.2, '#c99d4c');
+        s += sofa(X + 0.4, Y + 1.6, 1.8, '#d9cdb2', 'w');
+        s += plant(X + 4.3, Y + 0.6, true);
+        s += plant(X + 4.3, Y + 4.2);
+        break;
+      }
+      case 'socia': {
+        s += panelN(X + 0.6, Y + 0.02, 3.4, 4, 34, '#3f7a46', '#2c5a33');
+        for (let i = 0; i < 9; i++) {
+          const p = pt(X + 0.9 + i * 0.36, Y, 10 + (i % 3) * 8);
+          s += `<ellipse cx="${p[0]}" cy="${p[1]}" rx="6" ry="4" fill="${i % 2 ? '#5c9c5e' : '#4c8a52'}"/>`;
+        }
+        s += rug(r, 1.1, '#b25e45');
+        s += box(X + 1.4, Y + 1.6, 2.2, 0.9, 0, 13, WHITE, { top: '#fbf7ee' });
+        s += box(X + 3.6, Y + 1.6, 0.8, 1.8, 0, 13, WHITE, { top: '#fbf7ee' });
+        s += monitor(X + 2.2, Y + 1.75, 13, '#f1c4b4');
+        s += chair(X + 2.2, Y + 0.9, '#8d3f2c', 's');
+        s += avatar(X + 2.55, Y + 1.15, '#c0654a', { hair: '#2a1a12', long: true, skin: '#d9a77e', delay: .7 });
+        s += chair(X + 1.7, Y + 3.0, '#e3c48a') + chair(X + 2.8, Y + 3.0, '#e3c48a');
+        s += box(X + 0.4, Y + 3.8, 0.7, 0.7, 0, 8, '#c0654a');
+        s += plant(X + 4.3, Y + 4.2, true);
+        break;
+      }
+      case 'marketing': {
+        // mural de campanhas
+        s += panelW(X + 0.02, Y + 0.6, 3.6, 8, 32, '#efe6d2', '#bfb39a');
+        const cards = ['#e2803a', '#3e6fa8', '#cfa441', '#c0654a', '#3f8f5c', '#8150a6'];
+        cards.forEach((col, i) => {
+          const gy = Y + 0.85 + (i % 3) * 1.1, z = 12 + Math.floor(i / 3) * 10;
+          s += panelW(X + 0.03, gy, 0.8, z, z + 7, col);
+        });
+        s += rug(r, 1.0, '#c96f31');
+        s += desk(X + 1.2, Y + 0.6, '#e2803a', { glow: '#ffd3a8' });
+        s += desk(X + 3.0, Y + 0.6, '#e2803a', { w: 1.6, glow: '#b9d7f2' });
+        s += desk(X + 1.2, Y + 2.8, '#e2803a', { glow: '#f6c0e0' });
+        s += desk(X + 3.0, Y + 2.8, '#e2803a', { w: 1.6, glow: '#d3f0c2' });
+        s += avatar(X + 1.85, Y + 1.95, '#e2803a', { hair: '#b8532b', long: true, delay: .2 });
+        s += avatar(X + 3.6, Y + 1.95, '#2c2c34', { hair: '#111', delay: 1.4 });
+        s += avatar(X + 1.85, Y + 4.15, '#f2e3c4', { hair: '#6b4a2b', delay: .9 });
+        s += plant(X + 4.4, Y + 4.3);
+        break;
+      }
+      case 'reuniao': {
+        s += wallTV(X + 1.4, Y, 2.2, 24, 26, '#3e6fa8');
+        const p = pt(X + 2.5, Y, 37);
+        s += `<text x="${p[0]}" y="${p[1]}" text-anchor="middle" font-family="Silkscreen, monospace" font-size="7" fill="#e6f0fa" transform="skewY(27) translate(0,${-(p[0]) * 0.51})">PLANTA</text>`;
+        s += panelW(X + 0.02, Y + 1.2, 2.2, 14, 34, WHITE, '#c9c1ad');
+        s += rug(r, 0.7, '#355f91');
+        for (let i = 0; i < 4; i++) s += chair(X + 1.25 + i * 0.75, Y + 1.0, '#1e2c3d', 's');
+        s += box(X + 1.1, Y + 1.7, 3.1, 1.5, 0, 12, '#f0ead8', { top: '#fbf8ef' });
+        s += box(X + 2.2, Y + 2.2, 0.9, 0.5, 12, 0.8, '#3e6fa8');
+        s += chair(X + 0.4, Y + 2.1, '#1e2c3d', 'e');
+        s += chair(X + 4.35, Y + 2.1, '#1e2c3d', 'w');
+        for (let i = 0; i < 4; i++) s += chair(X + 1.25 + i * 0.75, Y + 3.35, '#1e2c3d', 'n');
+        s += avatar(X + 4.7, Y + 2.45, '#3e6fa8', { hair: '#2b1d13', delay: .3 });
+        s += avatar(X + 1.6, Y + 3.7, '#e9e2cf', { hair: '#5a3b24', long: true, delay: 1.2 });
+        s += plant(X + 0.3, Y + 4.3);
+        break;
+      }
+      case 'comercial': {
+        // painel de metas
+        s += panelN(X + 0.5, Y + 0.02, 2.6, 18, 38, '#1b2d24', '#0e1914');
+        [0.6, 0.85, 0.45, 0.95].forEach((v, i) => {
+          s += panelN(X + 0.8 + i * 0.55, Y + 0.03, 0.35, 21, 21 + 14 * v, i === 3 ? GLASS : '#d9a531');
+        });
+        s += box(X + 3.7, Y + 0.1, 0.5, 0.3, 30, 4, '#c79b2a');
+        s += rug(r, 0.8, '#b8891f');
+        for (let row = 0; row < 2; row++) {
+          const y = Y + 1.0 + row * 2.0;
+          s += box(X + 0.7, y, 3.6, 0.9, 0, 13, WOOD_L, { top: shade(WOOD_L, 1.12) });
+          for (let i = 0; i < 3; i++) s += monitor(X + 0.95 + i * 1.15, y + 0.15, 13, i % 2 ? '#ffe2a1' : '#cde4f7');
+          for (let i = 0; i < 3; i++) s += chair(X + 1.0 + i * 1.15, y + 1.05, '#d9a531');
+        }
+        s += avatar(X + 1.35, Y + 2.25, '#d9a531', { hair: '#2b1d13', delay: .1 });
+        s += avatar(X + 3.65, Y + 2.25, '#16291f', { hair: '#6b4a2b', long: true, delay: .8 });
+        s += avatar(X + 2.5, Y + 4.25, '#f2e3c4', { hair: '#111', delay: 1.6 });
+        s += plant(X + 4.4, Y + 4.4);
+        break;
+      }
+      case 'juridico': {
+        // estantes altas na parede oeste
+        for (let i = 0; i < 3; i++) {
+          const gy = Y + 0.4 + i * 1.3;
+          s += box(X + 0.1, gy, 0.5, 1.2, 0, 44, '#4a3426');
+          for (let r2 = 0; r2 < 4; r2++) {
+            const z = 4 + r2 * 10;
+            for (let k = 0; k < 4; k++) s += panelW(X + 0.61, gy + 0.1 + k * 0.27, 0.2, z, z + 7, ['#7a2e2a', '#2f3f6a', '#5b5aa8', '#a07a2f'][(k + r2 + i) % 4], 'rgba(0,0,0,.3)');
+          }
+        }
+        s += rug(r, 1.1, '#4b4a8c');
+        s += box(X + 1.6, Y + 1.5, 2.4, 1.2, 0, 13, '#5b3a22', { top: '#6e4a2c' });
+        s += box(X + 2.0, Y + 1.7, 0.6, 0.45, 13, 3, WHITE) + box(X + 2.8, Y + 1.75, 0.5, 0.4, 13, 2, '#e8dcc2');
+        s += monitor(X + 3.1, Y + 1.6, 13, '#d6d5f2');
+        s += chair(X + 2.4, Y + 0.8, '#2b2a4a', 's');
+        s += avatar(X + 2.75, Y + 1.05, '#5b5aa8', { hair: '#3b2a1e', delay: .5 });
+        s += chair(X + 2.0, Y + 3.0, '#a8a7d8') + chair(X + 3.0, Y + 3.0, '#a8a7d8');
+        s += box(X + 3.9, Y + 3.8, 0.7, 0.8, 0, 20, '#6a6f7a');
+        s += plant(X + 1.0, Y + 4.3);
+        break;
+      }
+      case 'financeiro': {
+        // painel de fluxo de caixa
+        s += panelN(X + 0.6, Y + 0.02, 2.2, 14, 36, '#f4efe2', '#c9c1ad');
+        const pts = [[0, 0.3], [0.2, 0.45], [0.4, 0.4], [0.6, 0.65], [0.8, 0.6], [1, 0.85]].map(([u, v]) => pt(X + 0.8 + u * 1.8, Y + 0.01, 17 + v * 16));
+        s += `<polyline points="${ps(pts)}" fill="none" stroke="#3f8f5c" stroke-width="2" stroke-linejoin="round"/>`;
+        s += box(X + 3.4, Y + 0.15, 1.0, 0.8, 0, 18, '#4b5058');
+        const d = pt(X + 3.9, Y + 0.95, 9); s += `<circle cx="${d[0]}" cy="${d[1]}" r="3" fill="#cfa441"/>`;
+        s += rug(r, 1.0, '#357a4e');
+        s += desk(X + 1.0, Y + 1.4, '#3f8f5c', { glow: '#c9ecd2' });
+        s += monitor(X + 1.75, Y + 1.6, 13, '#c9ecd2');
+        s += desk(X + 1.0, Y + 3.2, '#3f8f5c', { glow: '#c9ecd2' });
+        s += box(X + 3.6, Y + 1.6, 0.8, 0.6, 0, 22, '#7d848f') + box(X + 3.6, Y + 2.3, 0.8, 0.6, 0, 22, '#7d848f');
+        s += avatar(X + 1.65, Y + 2.65, '#3f8f5c', { hair: '#111', long: true, skin: '#c6936b', delay: .6 });
+        s += avatar(X + 3.2, Y + 4.0, '#f2e3c4', { hair: '#5a3b24', delay: 1.3 });
+        s += plant(X + 4.4, Y + 4.4);
+        break;
+      }
+      case 'jogos': {
+        s += wallTV(X + 2.6, Y, 1.8, 18, 20, '#8150a6');
+        s += box(X + 0.4, Y + 0.3, 0.9, 0.8, 0, 30, '#2a1f3d');
+        s += panelN(X + 0.5, Y + 1.1, 0.7, 14, 26, '#7fe3d0');
+        s += box(X + 0.4, Y + 1.1, 0.9, 0.15, 10, 3, '#e2803a');
+        s += box(X + 1.5, Y + 0.3, 0.9, 0.8, 0, 30, '#3a1f2f');
+        s += panelN(X + 1.6, Y + 1.1, 0.7, 14, 26, '#ffd36b');
+        s += rug(r, 0.9, '#6d4192');
+        // mesa de sinuca
+        s += box(X + 1.2, Y + 2.0, 2.8, 1.5, 0, 10, '#4a2c1a');
+        s += flat(X + 1.35, Y + 2.15, 2.5, 1.2, 10.4, '#2e7d4f', '#1f5a38');
+        [['#f4efe2', 1.8, 2.6], ['#d9a531', 2.6, 2.5], ['#c0392b', 2.9, 2.85], ['#1b1b1b', 3.2, 2.5], ['#3e6fa8', 3.4, 2.9]].forEach(([col, gx, gy]) => {
+          const b = pt(X + gx, Y + gy, 12); s += `<circle cx="${b[0]}" cy="${b[1]}" r="2.2" fill="${col}"/>`;
+        });
+        s += line(pt(X + 0.9, Y + 2.3, 13), pt(X + 2.0, Y + 2.7, 11), '#c79b5a', 1.6);
+        s += avatar(X + 0.75, Y + 2.6, '#8150a6', { hair: '#2b1d13', delay: .2 });
+        s += avatar(X + 4.3, Y + 3.2, '#e2803a', { hair: '#6b4a2b', long: true, delay: 1 });
+        // pufes
+        [[1.4, 4.2, '#e2803a'], [2.6, 4.3, '#3e6fa8'], [3.7, 4.2, '#cfa441']].forEach(([gx, gy, col]) => {
+          const b = pt(X + gx, Y + gy, 0);
+          s += `<ellipse cx="${b[0]}" cy="${b[1] - 4}" rx="13" ry="8" fill="${shade(col, .8)}"/><ellipse cx="${b[0]}" cy="${b[1] - 8}" rx="11" ry="6" fill="${col}"/>`;
+        });
+        s += box(X + 4.3, Y + 1.2, 0.6, 0.6, 0, 16, '#e9e4d8');
+        break;
+      }
+    }
+    return s;
+  }
+
+  // ---------- Montagem da cena ----------
+  const N = 15;
+  let out = '';
+  // laje do andar
+  out += box(0, 0, N, N, -10, 10, '#a6946a');
+  // piso de tábuas
+  for (let gx = 0; gx < N; gx++) for (let gy = 0; gy < N; gy++) {
+    out += poly([pt(gx, gy), pt(gx + 1, gy), pt(gx + 1, gy + 1), pt(gx, gy + 1)], (gx + gy) % 2 ? '#dccda5' : '#e4d7b3', 'rgba(120,96,58,.22)');
+  }
+  // fachadas de vidro do prédio (norte e oeste)
+  const WH = 104;
+  out += panelN(0, 0, N, 0, WH, '#e9dfc4', '#b3a685');
+  out += panelW(0, 0, N, 0, WH, '#ddd2b4', '#b3a685');
+  out += panelN(0, 0, N, 0, 12, '#2c4a39') + panelW(0, 0, N, 0, 12, '#243f30');
+  for (let i = 0; i < 7; i++) {
+    const a = 0.35 + i * 2.1;
+    out += panelN(a, 0, 1.7, 40, 92, '#9fc6d1', '#e9dfc4');
+    out += panelN(a + 0.1, 0, 1.5, 42, 90, 'url(#sky)');
+    out += line(pt(a + 0.85, 0, 42), pt(a + 0.85, 0, 90), '#e9dfc4', 1.5);
+    out += panelW(0, a, 1.7, 40, 92, '#8fb7c3', '#ddd2b4');
+    out += panelW(0, a + 0.1, 1.5, 42, 90, 'url(#sky2)');
+    out += line(pt(0, a + 0.85, 42), pt(0, a + 0.85, 90), '#ddd2b4', 1.5);
+  }
+  out += line(pt(0, 0, WH), pt(N, 0, WH), '#cfa441', 4) + line(pt(0, 0, WH), pt(0, N, WH), '#cfa441', 4);
+
+  const PART = 30;
+  const badges = [];
+  [...ROOMS].sort((a, b) => (a.x + a.y) - (b.x + b.y)).forEach(r => {
+    let g = '';
+    // divisórias baixas de madeira com friso na cor do time
+    if (r.y > 0) {
+      g += panelN(r.x, r.y, r.w, 0, PART, '#c8a77a', '#8a6a42');
+      g += line(pt(r.x, r.y, PART), pt(r.x + r.w, r.y, PART), r.color, 3);
+    }
+    if (r.x > 0) {
+      g += panelW(r.x, r.y, r.d, 0, PART, '#b8956a', '#8a6a42');
+      g += line(pt(r.x, r.y, PART), pt(r.x, r.y + r.d, PART), r.color, 3);
+    }
+    g += furnish(r);
+    const hit = [pt(r.x, r.y), pt(r.x + r.w, r.y), pt(r.x + r.w, r.y + r.d), pt(r.x, r.y + r.d)];
+    g += `<polygon class="hit" points="${ps(hit)}" stroke="none"/>`;
+    out += `<g class="room" data-id="${r.id}" tabindex="0" role="button" aria-label="${r.n}. ${r.name} — ${r.who}">${g}</g>`;
+    const b = pt(r.x + r.w - 0.35, r.y + r.d - 0.35, 2);
+    badges.push(`<g class="badge" data-id="${r.id}" pointer-events="none"><ellipse cx="${b[0]}" cy="${b[1] + 2}" rx="12" ry="5" fill="rgba(0,0,0,.25)"/><rect x="${b[0] - 11}" y="${b[1] - 20}" width="22" height="20" rx="6" fill="${r.color}" stroke="#fff" stroke-width="1.5"/><text x="${b[0]}" y="${b[1] - 6}" text-anchor="middle" fill="#fff">${r.n}</text></g>`);
+  });
+  out += badges.join('');
+
+  const defs = `<defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe0ea"/><stop offset="1" stop-color="#f3e3b8"/></linearGradient>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9d0dc"/><stop offset="1" stop-color="#e9d6a6"/></linearGradient>
+  </defs>`;
+  const svg = document.getElementById('scene');
+  svg.innerHTML = defs + out;
+
+  // ---------- Interação ----------
+  const tip = document.getElementById('tip');
+  const stage = document.querySelector('.stage');
+  const legend = document.getElementById('legend');
+  const byId = Object.fromEntries(ROOMS.map(r => [r.id, r]));
+  let focused = null;
+
+  ROOMS.forEach(r => {
+    const li = document.createElement('li');
+    li.innerHTML = `<button type="button" id="btn-${r.id}" data-id="${r.id}"><span class="num" style="background:${r.color}">${r.n}</span><span class="rname">${r.name}<span class="rteam">${r.who}</span></span><span class="cap">${r.cap}</span></button>`;
+    legend.appendChild(li);
+  });
+
+  function showTip(r, x, y) {
+    tip.innerHTML = `<h3>${r.n}. ${r.name}</h3><div class="who">${r.team} · ${r.who}</div><p>${r.desc}</p>`;
+    tip.hidden = false;
+    const sr = stage.getBoundingClientRect();
+    let left = x - sr.left + 16, top = y - sr.top + 16;
+    if (left + 260 > sr.width) left = x - sr.left - 266;
+    if (top + tip.offsetHeight > sr.height) top = Math.max(8, y - sr.top - tip.offsetHeight - 12);
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top = top + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+  function setFocus(id) {
+    focused = focused === id ? null : id;
+    svg.classList.toggle('has-focus', !!focused);
+    svg.querySelectorAll('.room').forEach(g => g.classList.toggle('on', g.dataset.id === focused));
+    svg.querySelectorAll('.badge').forEach(g => g.style.opacity = !focused || g.dataset.id === focused ? 1 : .3);
+    legend.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === focused));
+    if (!focused) hideTip();
+  }
+  function centerOf(id) {
+    const g = svg.querySelector(`.room[data-id="${id}"] .hit`).getBoundingClientRect();
+    return [g.left + g.width / 2, g.top + g.height / 3];
+  }
+
+  svg.querySelectorAll('.room').forEach(g => {
+    const r = byId[g.dataset.id];
+    g.addEventListener('mousemove', e => showTip(r, e.clientX, e.clientY));
+    g.addEventListener('mouseleave', () => { if (focused !== r.id) hideTip(); });
+    g.addEventListener('click', e => { setFocus(r.id); if (focused) showTip(r, e.clientX, e.clientY); });
+    g.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFocus(r.id); if (focused) showTip(r, ...centerOf(r.id)); }
+    });
+  });
+  legend.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const r = byId[b.dataset.id];
+    setFocus(r.id);
+    if (focused) { svg.closest('.stage').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); showTip(r, ...centerOf(r.id)); }
+  });
+})();
+</script>

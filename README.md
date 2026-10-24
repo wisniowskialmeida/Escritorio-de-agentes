@@ -128,6 +128,7 @@ index.html         a tela
 js/                motor isométrico, salas, móveis, bonecos, painéis
 css/style.css      tema
 exemplo-agente/    o menor sistema que o escritório sabe operar
+come-home/         planta do andar da Imobiliária Come Home (abre direto no navegador)
 data/              seus dados (fora do git, menos os exemplos)
 ```
 
